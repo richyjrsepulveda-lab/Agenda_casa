@@ -52,22 +52,60 @@ class DatabaseHelper {
       )
     ''');
   }
-
-  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       // Migrar tabla categorias
-      await db.execute('ALTER TABLE categorias ADD COLUMN tipoIntervalo INTEGER DEFAULT 0');
-      await db.execute('ALTER TABLE categorias RENAME COLUMN intervaloNotificacionMinutos TO intervaloNotificacion');
+      try {
+        await db.execute('ALTER TABLE categorias ADD COLUMN tipoIntervalo INTEGER DEFAULT 0');
+      } catch (e) {
+        // Ya existe
+      }
       
       // Migrar tabla marcas
-      await db.execute('ALTER TABLE marcas ADD COLUMN tipoIntervaloPersonalizado INTEGER');
-      await db.execute('ALTER TABLE marcas RENAME COLUMN intervaloNotificacionMinutosPersonalizado TO intervaloNotificacionPersonalizado');
+      try {
+        await db.execute('ALTER TABLE marcas ADD COLUMN tipoIntervaloPersonalizado INTEGER');
+      } catch (e) {
+        // Ya existe
+      }
     }
+    
     if (oldVersion < 3) {
-      // Cambiar de estado a finalizada
-      await db.execute('ALTER TABLE marcas ADD COLUMN finalizada INTEGER DEFAULT 0');
-      // Migrar datos: estado=1 (vencida) -> finalizada=1
-      await db.execute('UPDATE marcas SET finalizada = CASE WHEN estado = 1 THEN 1 ELSE 0 END');
+      // ELIMINAR la columna estado y agregar finalizada
+      // SQLite no permite DROP COLUMN, así que recreamos la tabla
+      
+      // 1. Crear tabla temporal
+      await db.execute('''
+        CREATE TABLE marcas_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nombre TEXT NOT NULL,
+          descripcion TEXT,
+          fechaHora INTEGER NOT NULL,
+          categoriaId INTEGER,
+          intervaloNotificacionPersonalizado INTEGER,
+          tipoIntervaloPersonalizado INTEGER,
+          finalizada INTEGER NOT NULL DEFAULT 0,
+          fechaCreacion INTEGER NOT NULL,
+          FOREIGN KEY (categoriaId) REFERENCES categorias (id) ON DELETE SET NULL
+        )
+      ''');
+      
+      // 2. Copiar datos (estado=1 -> finalizada=1, estado=0 -> finalizada=0)
+      await db.execute('''
+        INSERT INTO marcas_new (id, nombre, descripcion, fechaHora, categoriaId, 
+                               intervaloNotificacionPersonalizado, tipoIntervaloPersonalizado,
+                               finalizada, fechaCreacion)
+        SELECT id, nombre, descripcion, fechaHora, categoriaId,
+               intervaloNotificacionPersonalizado, tipoIntervaloPersonalizado,
+               CASE WHEN estado = 1 THEN 1 ELSE 0 END,
+               fechaCreacion
+        FROM marcas
+      ''');
+      
+      // 3. Eliminar tabla vieja
+      await db.execute('DROP TABLE marcas');
+      
+      // 4. Renombrar tabla nueva
+      await db.execute('ALTER TABLE marcas_new RENAME TO marcas');
     }
   }
 
