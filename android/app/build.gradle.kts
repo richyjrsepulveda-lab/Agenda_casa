@@ -3,7 +3,6 @@ plugins {
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
-
 android {
     namespace = "com.example.agenda_casa"
     compileSdk = flutter.compileSdkVersion
@@ -42,3 +41,4 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")  // ← AGREGA ESTO
 }
+apply(plugin = "com.google.gms.google-services")

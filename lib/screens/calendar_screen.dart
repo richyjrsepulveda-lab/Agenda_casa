@@ -75,69 +75,98 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildCalendar() {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
-        return TableCalendar(
-          firstDay: DateTime(2020),
-          lastDay: DateTime(2030),
-          focusedDay: _focusedDay,
-          selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          calendarFormat: CalendarFormat.month,
-          startingDayOfWeek: StartingDayOfWeek.monday,
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            markerDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary,
-              shape: BoxShape.circle,
-            ),
-          ),
-          onDaySelected: (selectedDay, focusedDay) {
-            setState(() {
-              _selectedDay = selectedDay;
-              _focusedDay = focusedDay;
-            });
-          },
-          onPageChanged: (focusedDay) {
-            _focusedDay = focusedDay;
-          },
-          calendarBuilders: CalendarBuilders(
-            markerBuilder: (context, date, events) {
-              final normalizedDate = DateTime(date.year, date.month, date.day);
-              final count = provider.contadorMarcasPorDia[normalizedDate] ?? 0;
-              
-              if (count == 0) return const SizedBox.shrink();
-              
-              return Positioned(
-                right: 1,
-                top: 1,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '+$count',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+        return Column(
+          children: [
+            // Botón "Hoy"
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _focusedDay = DateTime.now();
+                        _selectedDay = DateTime.now();
+                      });
+                    },
+                    icon: const Icon(Icons.today, size: 18),
+                    label: const Text('Hoy'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    textAlign: TextAlign.center,
                   ),
+                ],
+              ),
+            ),
+            TableCalendar(
+              firstDay: DateTime(2020),
+              lastDay: DateTime(2030),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              calendarFormat: CalendarFormat.month,
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              availableCalendarFormats: const {
+                CalendarFormat.month: 'Mes',
+              },
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
                 ),
-              );
-            },
-          ),
+                selectedDecoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  final normalizedDate = DateTime(date.year, date.month, date.day);
+                  final count = provider.contadorMarcasPorDia[normalizedDate] ?? 0;
+                  
+                  if (count == 0) return const SizedBox.shrink();
+                  
+                  return Positioned(
+                    right: 1,
+                    top: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondary,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '+$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -342,7 +371,7 @@ class _MarcaCard extends StatelessWidget {
     );
   }
 
-void _showFinishDialog(BuildContext context) {
+  void _showFinishDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "308938690587",
+    "project_id": "agenda-fit-cb750",
+    "storage_bucket": "agenda-fit-cb750.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:308938690587:android:701fa1b3db04e6397b68be",
+        "android_client_info": {
+          "package_name": "com.example.agenda_casa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf-G8t-9sH8QusmxYeMiAYeFAYXKyOgpY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
